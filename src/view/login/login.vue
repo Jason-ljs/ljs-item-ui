@@ -1,5 +1,5 @@
 <template>
-  <div class="login-wrap" :style="divimg">
+  <div class="login-wrap" :style="divimg" >
 
     <div>
       <p class="p-title">LCG我爱编码,欢迎点评</p>
@@ -128,7 +128,9 @@
             this.$data.percent=pp;
           },100)
           //从cookie中取出某一个名称的Cookie的值
+          console.log(par)
           par.codekey=this.Cookies.get("authcode")
+          console.log(par)
           this.$axios.post(this.domain.ssoserverpath+"login",par).then((response)=>{
             let respo=response.data;
             if(respo.code==200){
@@ -281,12 +283,11 @@
       //从后台获取滑动验证码
       //参数 url 访问参数
       this.$axios.post(this.domain.ssoserverpath+'getCode').then((response)=>{
+        console.log(response.data.result)
         code=response.data.result;
         //向浏览器写一个Cookie
         //document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
         _this.moveCode(code,_this);
-      }).catch((error)=>{
-
       })
 
 //});

@@ -25,7 +25,7 @@ axios.defaults.withCredentials=true
 
 //引入cookie插件
 import Cookies from 'js-cookie'
-Vue.prototype.Cookie=Cookies
+Vue.prototype.Cookies=Cookies
 
 //引入VUEX
 import store from './store/store'
@@ -48,18 +48,7 @@ axios.interceptors.request.use((config) => {
       Cookies.set("authcode","",{path:"/",domain:"localhost",age:-1})
     }
   }
-  config.headers.setItem("token","")
-  return config;
-})
-axios.interceptors.response.use((config) => {
-  if(config.url.includes("getCode")){//如果是获取验证码的路径
-    //没有cookie的话添加cookie
-    let aucokie = Cookies.get("authcode")
-    if(aucokie==null){
-      Cookies.set("authcode","",{path:"/",domain:"localhost",age:-1})
-    }
-  }
-  config.headers.setItem("token","")
+ // config.headers.setItem("token","")
   return config;
 })
 
