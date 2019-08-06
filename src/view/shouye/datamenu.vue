@@ -38,7 +38,7 @@
           return{
             isCollapse:true,
             wheight:window.innerHeight,
-            listMenu:this.$store.state.userInfo.listMenuInfo
+            listMenu:JSON.parse(window.sessionStorage.getItem("userInfo")).listMenuInfo
           }
       },
       methods:{

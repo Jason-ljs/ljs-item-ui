@@ -132,12 +132,10 @@
           par.codekey=this.Cookies.get("authcode")
           console.log(par)
           this.$axios.post(this.domain.ssoserverpath+"login",par).then((response)=>{
-            let respo=response.data;
-            if(respo.code==200){
-              //存储token到vuex中，
-              this.$store.state.token=response.data.token
-              this.$store.state.userInfo=response.data.result
-              window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result))
+            if(response.data.code==200){
+              //存储token到vuex中，token
+              window.sessionStorage.setItem("token",response.data.token);
+              window.sessionStorage.setItem("userInfo",[JSON.stringify(response.data.result)]);
               //关闭加载窗
               this.$data.percent=100
               //隐藏进度条
