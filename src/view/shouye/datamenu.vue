@@ -66,7 +66,7 @@
              //进入对应的路由
              this.$router.push({path:url})
            }else{
-             this.$router.push({path:'/datamain/test'})
+             this.$router.push({path:'/system'})
            }
 
         }

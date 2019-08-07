@@ -18,7 +18,7 @@
 
         </span>
 
-        <el-avatar src="http://127.0.0.1:8090/icon.png" style="float: right;margin-top: 10px;margin-left: 5px"></el-avatar>
+        <el-avatar :src="userInfo.imgUrl" style="float: right;margin-top: 10px;margin-left: 5px"></el-avatar>
         <div style="float:right">
           <el-dropdown @command="handleCommand">
             <i class="el-icon-setting" style="margin-right: 15px"></i>
@@ -48,12 +48,11 @@
       :visible.sync="dialog1Visible"
       width="40%"
     >
-      <img src="http://127.0.0.1:8090/icon.png" width="150px">
+      <img :src="userInfo.imgUrl" width="150px">
       <el-form  :inline="true" label-width="100px" class="demo-form-inline">
         <el-form-item label="用户名:">{{userInfo.userName}}</el-form-item><br>
         <el-form-item label="登录名:">{{userInfo.loginName}}</el-form-item><br>
-        <el-form-item label="性别:" v-if="userInfo.sex===1">男</el-form-item>
-        <el-form-item label="性别:" v-if="userInfo.sex===2">女</el-form-item>
+        <el-form-item label="性别:">{{userInfo.sex}}</el-form-item>
         <br>
         <el-form-item label="电话:">{{userInfo.tel}}</el-form-item>
       </el-form>
@@ -69,8 +68,6 @@
 <script>
   import mymenu from './datamenu.vue'
   import mymain from './datamain.vue'
-
-  const userinfo={};
 
   export default {
 
@@ -123,7 +120,6 @@
     mounted(){
 
       this.userInfo = JSON.parse(window.sessionStorage.getItem("userInfo"));
-
 
       //登录之后提示
       this.playAudio("yiliuyan","yiliuyan");

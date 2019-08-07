@@ -6,6 +6,7 @@ import shouye from '@/view/shouye/shouye'
 import datamenu from '@/view/shouye/datamenu'
 import datamain from '@/view/shouye/datamain'
 import system from '@/view/shouye/system'
+import userManager from '@/view/user/userManager'
 
 Vue.use(Router)
 
@@ -35,6 +36,13 @@ export default new Router({
             {
               path:'/system',
               component:system,
+              meta:{
+                require:true
+              }
+            },
+            {
+              path:"/userManager",
+              component:userManager,
               meta:{
                 require:true
               }
