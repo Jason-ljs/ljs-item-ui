@@ -76,6 +76,16 @@
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
+        prop="createTimeFormat"
+        label="创建时间"
+        show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column
+        prop="roleInfo.roleName"
+        label="角色"
+        show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column
         label="用户头像"
         show-overflow-tooltip>
         <template slot-scope="scope">
@@ -93,6 +103,10 @@
             size="mini"
             type="danger"
             @click="handleDelete(scope.row.id)">删除</el-button>
+          <el-button
+            size="mini"
+            type="warning"
+            @click="EditRoleOpen(scope.row.id)">角色绑定</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -140,12 +154,27 @@
         <el-form-item label="确认登录密码" prop="cpassword">
           <el-input type="password" v-model="formEntity.cpassword"></el-input>
         </el-form-item>
-
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="close">取消</el-button>
         <el-button type="primary" @click="save">保存</el-button>
         <el-button @click="resetForm('formEntity')">重置</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- ++++++++绑定角色弹窗+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+    <el-dialog title="绑定角色" :visible.sync="dialogFormVisibleRole">
+      <el-select v-model="roleId" filterable>
+        <el-option
+          v-for="item in options"
+          :key="item.roleName"
+          :label="item.roleName"
+          :value="item.id">
+        </el-option>
+      </el-select>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisibleRole = false">取 消</el-button>
+        <el-button type="primary" @click="handleEditRole">保 存</el-button>
       </div>
     </el-dialog>
   </div>
@@ -155,6 +184,7 @@
     export default {
         name: "userManager",
       data(){
+          //校验规则
         var validatePass = (rule, value, callback) => {
           if (value === '') {
             callback(new Error('请输入密码'));
@@ -195,7 +225,7 @@
               cpassword:"",
               imgUrl:""
             },
-            rules:{
+            rules:{//谁用规则
               userName: [
                 { required: true, message: '请输入用户名', trigger: 'change' }
               ],
@@ -215,13 +245,45 @@
                 { validator: validatePass2, trigger: 'blur' }
               ],
             },
-            dialogFormVisible:false
+            dialogFormVisible:false,
+            dialogFormVisibleRole:false,
+            options:[],
+            uid:"",
+            roleId:""
           }
       },
       mounted(){
+        this.options = JSON.parse(window.sessionStorage.getItem("userInfo")).roleInfoList;
         this.getList();
       },
       methods: {
+        EditRoleOpen(uid){
+          //打开绑定角色弹窗
+          this.roleId="";
+          this.uid=uid;
+          this.dialogFormVisibleRole = true;
+        },
+        handleEditRole(){
+          //绑定角色
+          this.dialogFormVisibleRole = true;
+          let map = {
+          "uid":this.uid,
+          "rid":this.roleId
+          };
+          this.dialogFormVisibleRole = false;
+          this.formEntity={};
+          this.$axios.post(this.domain.serverpath+"editRole",map).then((response)=> {
+            if(response.data.code==200){
+              this.getList()
+              this.$message({
+                message: response.data.success,
+                type: 'success'
+              });
+            }
+          }).catch((err)=>{
+            this.$message.error('您无此操作权限！');
+          })
+        },
         save(){
           //保存
           let url = "addUser";
@@ -237,12 +299,9 @@
                 message: response.data.success,
                 type: 'success'
               });
-            }else {
-              this.$message({
-                message: '错误',
-                type: 'success'
-              });
             }
+          }).catch((err)=>{
+            this.$message.error('您无此操作权限！');
           })
         },
         handleAvatarSuccess(res, file) {
@@ -256,7 +315,7 @@
           this.formEntity={};
         },
         resetForm(formEntity) {
-          //充值按钮
+          //重置按钮
           this.$refs[formEntity].resetFields();
         },
         handleAdd(){
@@ -267,6 +326,7 @@
         handleEdit(mod){
           //编辑
           this.formEntity=mod;
+          this.formEntity.password="";
           this.dialogFormVisible = true;
         },
         handleDelete(id){
@@ -280,6 +340,8 @@
                   type: 'success'
                 });
               }
+            }).catch((err)=>{
+              this.$message.error('您无此操作权限！');
             })
           }
         },
@@ -289,6 +351,9 @@
               console.log(response.data)
               this.tableData=response.data.list;
               this.total=response.data.total;
+              this.formInline.page=response.data.pageNum;
+            }).catch((err)=>{
+              this.$message.error('您无此操作权限！');
             })
           },
           onSubmit() {

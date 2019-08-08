@@ -105,11 +105,11 @@ axios.interceptors.response.use((response)=>{
   }
   return response;
 },(error)=>{
-  //失败跳转到登录界面
+/*  //失败跳转到登录界面
   router.replace({
     path: '/',
     query: {redirect: router.currentRoute.fullPath}
-  })
+  })*/
 })
 
 /* eslint-disable no-new */
