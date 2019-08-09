@@ -65,6 +65,45 @@
         :page-size="formInline.pageSize"
         :total="total">
       </el-pagination>
+      <!-- ++++++++++++增加弹窗++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <el-dialog title="添加角色" :visible.sync="dialogFormVisible">
+        <el-form :model="form">
+          <el-form-item label="角色名称" :label-width="formLabelWidth">
+            <el-input v-model="form.roleName" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="角色描述" :label-width="formLabelWidth">
+            <el-input type="textarea" v-model="form.miaoShu"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary">重 置</el-button>
+          <el-button @click="close">取 消</el-button>
+          <el-button type="primary" @click="save()">保 存</el-button>
+        </div>
+      </el-dialog>
+      <!-- ++++++++++++权限绑定弹窗++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <el-dialog title="编辑角色" :visible.sync="dialogFormVisibleTree">
+        <el-form :model="form">
+          <el-form-item label="角色名称" :label-width="formLabelWidth">
+            <el-input v-model="formTree.roleName" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="角色描述" :label-width="formLabelWidth">
+            <el-input type="textarea" v-model="formTree.miaoShu"></el-input>
+          </el-form-item>
+        </el-form>
+        <el-tree
+          :data="treeData"
+          show-checkbox
+          ref="tree"
+          node-key="id"
+          :default-expand-all="true"
+          :props="defaultProps">
+        </el-tree>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="close">取 消</el-button>
+          <el-button type="primary" @click="saveTree()">保 存</el-button>
+        </div>
+      </el-dialog>
     </div>
 </template>
 
@@ -81,16 +120,56 @@
             tableData:[],
             total:0,
             formEntity:{},
-            dialogFormVisible:false
+            dialogFormVisible:false,
+            formLabelWidth:"120px",
+            form:{},
+            formTree:{},
+            dialogFormVisibleTree:false,
+            treeData:[],
+            defaultProps: {
+              children: 'menuInfoList',
+              label: 'menuName'
+            },
+            ids:""
           }
       },
       mounted() {
           this.getList();
+          this.findTreeData();
       },
       methods:{
+        findTreeData(){
+          this.$axios.post(this.domain.serverpath+"findMenuList").then((response)=> {
+            this.treeData=response.data;
+          }).catch((err)=>{
+            this.$message.error('您无此操作权限！');
+          })
+        },
+        saveTree(){
+          //点击编辑绑定权限的保存按钮
+          let ids = this.$refs.tree.getHalfCheckedKeys()+","+this.$refs.tree.getCheckedKeys();
+          let map ={
+            "ids":ids,
+            "role":this.formTree
+          }
+          this.$axios.post(this.domain.serverpath+"updateRole",map).then((response)=> {
+            if(response.data.code==200){
+              this.getList()
+              this.dialogFormVisibleTree=false;
+              this.$message({
+                message: response.data.success,
+                type: 'success'
+              });
+            }
+          }).catch((err)=>{
+            this.$message.error('您无此操作权限！');
+          })
+        },
         handleDelete(id){
+          alert(id)
+          let map = {"id":id}
           //删除权限
-          this.$axios.post(this.domain.serverpath+"deleteRole",id).then((response)=> {
+          this.$axios.post(this.domain.serverpath+"deleteRole",map).then((response)=> {
             if(response.data.code==200){
               this.getList()
               this.$message({
@@ -105,7 +184,6 @@
         getList(){
           //查询角色
           this.$axios.post(this.domain.serverpath+"findRole",this.formInline).then((response)=> {
-            console.log(response.data)
             this.tableData=response.data.list;
             this.total=response.data.total;
             this.formInline.page=response.data.pageNum;
@@ -126,16 +204,35 @@
         close(){
           //关闭添加的弹窗
           this.dialogFormVisible = false;
-          this.formEntity={};
-        },
-        handleSizeChange(){
-          //每页条数更改
+          this.dialogFormVisibleTree = false;
+          this.form={};
         },
         handleAdd(){
           //点击添加角色按钮
+          this.form={};
+          this.dialogFormVisible=true;
         },
-        handleEdit(){
+        save(){
+          this.$axios.post(this.domain.serverpath+"addRole",this.form).then((response)=> {
+            if (response.data.code==200){
+              this.getList();
+              this.dialogFormVisible=false;
+              this.$message({
+                message: response.data.success,
+                type: 'success'
+              });
+            }
+          }).catch((err)=>{
+            this.$message.error('您无此操作权限！');
+          })
+        },
+        handleEdit(row){
           //点击编辑绑定权限按钮
+          this.dialogFormVisibleTree=true;
+          this.formTree=row;
+          setTimeout(()=>{
+            this.$refs.tree.setCheckedKeys(row.menuList,true),0;
+          })
         },
         onSubmit(){
           //模糊查询

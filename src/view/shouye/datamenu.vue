@@ -15,7 +15,7 @@
                     v-for="(m1,mindex) in listMenu" :key="mindex"
                     :index="getIndex(m1.id)">
           <template slot="title">
-            <i v-if="m1.id==1" class="el-icon-setting"></i>
+            <i v-if="m1.leval==1" class="el-icon-setting"></i>
             <span slot="title">{{m1.menuName}}</span>
           </template>
 
