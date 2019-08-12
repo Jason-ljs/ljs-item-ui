@@ -11,6 +11,7 @@
       </el-form>
       <!-- +++++++列表展示++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
       <el-button @click="handleAdd" type="primary" icon="el-icon-plus" style="float: left">添加角色</el-button>
+      <el-button @click="downloadExcel" type="success" icon="el-icon-plus" style="float: left">导出数据</el-button>
       <el-table
         ref="multipleTable"
         :data="tableData"
@@ -138,6 +139,36 @@
           this.findTreeData();
       },
       methods:{
+        //列表下载
+        downloadExcel() {
+          this.$confirm('确定下载列表文件?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.excelData = this.tableData //要导出的数据list。
+            this.export2Excel()
+          }).catch(() => {
+
+          });
+        },
+        //数据写入excel
+        export2Excel() {
+          var that = this;
+          require.ensure([], () => {
+            const { export_json_to_excel } = require('@/excel/export2Excel'); //这里必须使用绝对路径，使用@/+存放export2Excel的路径
+            const tHeader = ['序号','角色名称','角色描述','绑定用户']; // 导出的表头名信息
+            const filterVal = ['id','roleName', 'miaoShu', 'userNames']; // 导出的表头字段名，需要导出表格字段名
+            const list = that.excelData;
+            const data = that.formatJson(filterVal, list);
+
+            export_json_to_excel(tHeader, data, 'role下载数据excel');// 导出的表格名称，根据需要自己命名
+          })
+        },
+        //格式转换，直接复制即可
+        formatJson(filterVal, jsonData) {
+          return jsonData.map(v => filterVal.map(j => v[j]))
+        },
         findTreeData(){
           this.$axios.post(this.domain.serverpath+"findMenuList").then((response)=> {
             this.treeData=response.data;
@@ -160,13 +191,14 @@
                 message: response.data.success,
                 type: 'success'
               });
+            }else {
+              this.$message.error(response.data.error);
             }
           }).catch((err)=>{
             this.$message.error('您无此操作权限！');
           })
         },
         handleDelete(id){
-          alert(id)
           let map = {"id":id}
           //删除权限
           this.$axios.post(this.domain.serverpath+"deleteRole",map).then((response)=> {
@@ -176,6 +208,8 @@
                 message: response.data.success,
                 type: 'success'
               });
+            }else {
+              this.$message.error(response.data.error);
             }
           }).catch((err)=>{
             this.$message.error('您无此操作权限！');
@@ -220,7 +254,9 @@
               this.$message({
                 message: response.data.success,
                 type: 'success'
-              });
+              })
+            }else {
+              this.$message.error(response.data.error);
             }
           }).catch((err)=>{
             this.$message.error('您无此操作权限！');

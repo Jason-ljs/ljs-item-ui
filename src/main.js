@@ -90,6 +90,7 @@ axios.interceptors.request.use((config) => {
       Cookies.set("authcode", "", {path: "/", domain: "localhost", age: -1})
     }
   }
+
   let token = window.sessionStorage.getItem("token");
   config.headers['token'] = token;
   return config;
@@ -101,7 +102,7 @@ axios.interceptors.response.use((response)=>{
 
   if(yy!=undefined){
     //重新设置localStorge中的token的值，用来刷新tocken
-    window.localStorage.setItem("token",yy)
+    window.sessionStorage.setItem("token",yy)
   }
   return response;
 },(error)=>{

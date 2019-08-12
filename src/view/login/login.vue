@@ -276,6 +276,8 @@
 
     },
     mounted(){
+      window.sessionStorage.clear();
+      window.localStorage.clear();
       var _this = this;
       var code = "";
       //从后台获取滑动验证码
@@ -284,7 +286,7 @@
         console.log(response.data.result)
         code=response.data.result;
         //向浏览器写一个Cookie
-        //document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
+        document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
         _this.moveCode(code,_this);
       })
 
