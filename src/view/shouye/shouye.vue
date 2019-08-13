@@ -103,6 +103,7 @@
               if(sts=="ok"){
                 //清除session中的所有值
                 window.sessionStorage.clear();
+                window.localStorage.clear();
                 this.$router.push({path:'/'});
               }
             })
@@ -119,7 +120,7 @@
     },
     mounted(){
 
-      this.userInfo = JSON.parse(window.sessionStorage.getItem("userInfo"));
+      this.userInfo = JSON.parse(window.localStorage.getItem("userInfo"));
 
       //登录之后提示
       this.playAudio("yiliuyan","yiliuyan");

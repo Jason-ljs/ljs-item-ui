@@ -37,7 +37,7 @@
             <el-input v-model="formEntity.menuNameadd"></el-input>
           </el-form-item>
         <el-form-item :hidden="addHidden" label="菜单访问URL">
-          <el-input  v-model="formEntity.urladd"></el-input> b
+          <el-input  v-model="formEntity.urladd"></el-input>
         </el-form-item>
           <el-form-item :hidden="updateHidden" label="修改菜单名称">
             <el-input v-model="form.menuName"></el-input>
@@ -63,6 +63,7 @@
     name: "menuManager",
     data() {
       return {
+        userInfo:{},
         filterText: "",
         data: [],
         defaultProps: {
@@ -83,6 +84,7 @@
       }
     },
     mounted() {
+      this.userInfo=JSON.parse(window.localStorage.getItem("userInfo"));
       this.findTreeData();
     },
     methods: {
@@ -154,8 +156,9 @@
         }
       },
       findTreeData() {
-        //树形图列表展示
-        this.$axios.post(this.domain.serverpath + "findMenuList").then((response) => {
+        //树形图列表展示\
+        let map = {"roleId":this.userInfo.roleInfo.id}
+        this.$axios.post(this.domain.serverpath + "findMenuList",map).then((response) => {
           this.data = response.data;
         }).catch((err) => {
           this.$message.error('您无此操作权限！');

@@ -88,11 +88,23 @@
             label="角色"
             show-overflow-tooltip>
           </el-table-column>
+          <!--<el-table-column
+            label="用户头像"
+            show-overflow-tooltip>
+            <template slot-scope="scope">
+              <el-image @click="showImg" :src="scope.row.imgUrl+'_sl.jpg'" style="height: 50px;width: 50px"></el-image>
+            </template>
+          </el-table-column>-->
           <el-table-column
             label="用户头像"
             show-overflow-tooltip>
             <template slot-scope="scope">
-              <el-image :src="scope.row.imgUrl" style="height: 50px;width: 50px"></el-image>
+              <el-popover trigger="hover" placement="top">
+                <p><el-image :src="scope.row.imgUrl"></el-image></p>
+                <div slot="reference" class="name-wrapper">
+                  <el-image :src="scope.row.imgUrl+'_sl.jpg'" style="height: 50px;width: 50px"></el-image>
+                </div>
+              </el-popover>
             </template>
           </el-table-column>
           <el-table-column
@@ -101,15 +113,15 @@
             <template slot-scope="scope">
               <el-button
                 size="mini"
-                @click="handleEdit( scope.row)">编辑</el-button>
+                @click="handleEdit( scope.row)" v-if="userInfo.roleInfo.leval < scope.row.roleInfo.leval">编辑</el-button>
               <el-button
                 size="mini"
                 type="danger"
-                @click="handleDelete(scope.row.id)">删除</el-button>
+                @click="handleDelete(scope.row.id)" v-if="userInfo.roleInfo.leval < scope.row.roleInfo.leval">删除</el-button>
               <el-button
                 size="mini"
                 type="warning"
-                @click="EditRoleOpen(scope.row.id)">角色绑定</el-button>
+                @click="EditRoleOpen(scope.row.id)" v-if="userInfo.roleInfo.leval < scope.row.roleInfo.leval">角色绑定</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -149,7 +161,7 @@
               </el-radio-group>
             </el-form-item>
             <el-form-item label="电话" prop="tel">
-              <el-input v-model="formEntity.tel"></el-input>
+              <el-input v-model="formEntity.tel" type="number"></el-input>
             </el-form-item>
             <el-form-item label="登录密码" prop="password">
               <el-input type="password" v-model="formEntity.password"></el-input>
@@ -170,7 +182,7 @@
           <el-select v-model="roleId" filterable>
             <el-option
               v-for="item in options"
-              :key="item.roleName"
+              :key="item.id"
               :label="item.roleName"
               :value="item.id">
             </el-option>
@@ -219,6 +231,7 @@
           }
         };
           return{
+            userInfo:{},
             formInline: {
               user: '',
               sex: '全部',
@@ -267,6 +280,7 @@
           }
       },
       mounted(){
+        this.userInfo=JSON.parse(window.localStorage.getItem("userInfo"));
         this.getList();
         this.findRoleAll();
       },
@@ -302,9 +316,10 @@
           return jsonData.map(v => filterVal.map(j => v[j]))
         },
         findRoleAll(){
+          let map = {"leval":this.userInfo.roleInfo.leval}
+          console.log(this.userInfo.roleInfo)
           //查询所有角色
-          this.$axios.post(this.domain.serverpath+"findRoleAll").then((response)=> {
-            console.log("sssss")
+          this.$axios.post(this.domain.serverpath+"findRoleAll",map).then((response)=> {
             console.log(response.data)
             this.options = response.data;
           }).catch((err)=>{
@@ -313,7 +328,7 @@
         },
         EditRoleOpen(uid){
           //打开绑定角色弹窗
-          this.roleId="";
+          this.roleId=uid;
           this.uid=uid;
           this.dialogFormVisibleRole = true;
         },
@@ -344,25 +359,29 @@
           if (this.formEntity.id>0){
             url = "updateUser"
           }
-          this.$axios.post(this.domain.serverpath+url,this.formEntity).then((response)=> {
-            if(response.data.code==200){
-              this.dialogFormVisible = false;
-              this.formEntity={};
-              this.getList()
-              this.$message({
-                message: response.data.success,
-                type: 'success'
-              });
-            }else {
-              this.$message({
-                message: response.data.error,
-                type: 'error'
-              });
-            }
-          }).catch((err)=>{
+          if(/^1(3|4|5|6|7|8|9)\d{9}$/.test(this.formEntity.tel)){
+            this.$axios.post(this.domain.serverpath+url,this.formEntity).then((response)=> {
+              if(response.data.code==200){
+                this.dialogFormVisible = false;
+                this.formEntity={};
+                this.getList()
+                this.$message({
+                  message: response.data.success,
+                  type: 'success'
+                });
+              }else {
+                this.$message({
+                  message: response.data.error,
+                  type: 'error'
+                });
+              }
+            }).catch((err)=>{
               this.dialogFormVisible = false;
               this.$message.error('您无此操作权限！');
-          })
+            })
+          }else {
+            this.$message.error('手机号格式有误！');
+          }
         },
         handleAvatarSuccess(res, file) {
           //上传图片成功后回调函数

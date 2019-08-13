@@ -69,7 +69,7 @@ router.beforeEach((to, from, next) => {
   //判断是否登录 to.meta.require是true说明需要进行登录的验证
   if(to.meta.require){
     //获取本地存储中的jwt token
-    let token=window.sessionStorage.getItem("token");
+    let token=window.localStorage.getItem("token");
     if(token!=null){
       next();
     }else{
@@ -91,7 +91,7 @@ axios.interceptors.request.use((config) => {
     }
   }
 
-  let token = window.sessionStorage.getItem("token");
+  let token = window.localStorage.getItem("token");
   config.headers['token'] = token;
   return config;
 })
@@ -102,7 +102,7 @@ axios.interceptors.response.use((response)=>{
 
   if(yy!=undefined){
     //重新设置localStorge中的token的值，用来刷新tocken
-    window.sessionStorage.setItem("token",yy)
+    window.localStorage.setItem("token",yy)
   }
   return response;
 },(error)=>{

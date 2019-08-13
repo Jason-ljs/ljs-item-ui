@@ -47,11 +47,11 @@
           <template slot-scope="scope">
             <el-button
               size="mini"
-              @click="handleEdit( scope.row)">编辑绑定权限</el-button>
+              @click="handleEdit( scope.row)" v-if="userInfo.roleInfo.leval < scope.row.leval">编辑绑定权限</el-button>
             <el-button
               size="mini"
               type="danger"
-              @click="handleDelete(scope.row.id)">删除</el-button>
+              @click="handleDelete(scope.row.id)" v-if="userInfo.roleInfo.leval < scope.row.leval">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -113,7 +113,9 @@
         name: "roleManager",
       data(){
           return{
+            userInfo:{},
             formInline:{
+              leval:"",
               role:"",
               page:1,
               pageSize:3
@@ -135,6 +137,8 @@
           }
       },
       mounted() {
+          this.userInfo = JSON.parse(window.localStorage.getItem("userInfo"));
+          this.formInline.leval=this.userInfo.roleInfo.leval;
           this.getList();
           this.findTreeData();
       },
@@ -170,7 +174,8 @@
           return jsonData.map(v => filterVal.map(j => v[j]))
         },
         findTreeData(){
-          this.$axios.post(this.domain.serverpath+"findMenuList").then((response)=> {
+          let map = {"roleId":this.userInfo.roleInfo.id};
+          this.$axios.post(this.domain.serverpath+"findMenuList",map).then((response)=> {
             this.treeData=response.data;
           }).catch((err)=>{
             this.$message.error('您无此操作权限！');
@@ -179,6 +184,9 @@
         saveTree(){
           //点击编辑绑定权限的保存按钮
           let ids = this.$refs.tree.getHalfCheckedKeys()+","+this.$refs.tree.getCheckedKeys();
+          if(ids.indexOf(",") == 0){
+            ids = ids.substring(1);
+          }
           let map ={
             "ids":ids,
             "role":this.formTree
