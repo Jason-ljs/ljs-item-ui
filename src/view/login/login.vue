@@ -2,47 +2,83 @@
   <div class="login-wrap" :style="divimg" >
 
     <div>
-      <p class="p-title">LCG我爱编码,欢迎点评</p>
+      <p class="p-title">Jason我爱编码,欢迎点评</p>
     </div>
     <div class="ms-login">
       <div class="ms-title">
         欢迎使用
       </div>
-      <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="ms-content">
-        <el-form-item prop="username">
-          <el-input v-model="ruleForm.username" placeholder="请输入用户名">
-            <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
-          </el-input>
-        </el-form-item>
-        <el-form-item  prop="password">
-          <el-input type="password" placeholder="请输入认证密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
-            <el-button slot="prepend" icon="iconfont icon-yuechi"></el-button>
-          </el-input>
-        </el-form-item>
+      <el-tabs type="border-card">
+        <el-tab-pane label="账密登录">
 
-        <el-form-item prop="code">
-          <div class="form-inline-input">
-            <div class="code-box" id="code-box">
-              <input ref="coderef" type="text" name="code" class="code-input" />
-              <p></p>
-              <span style="color:#909399">
+          <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="ms-content">
+            <el-form-item prop="username">
+              <el-input v-model="ruleForm.username" placeholder="请输入用户名">
+                <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
+              </el-input>
+            </el-form-item>
+            <el-form-item  prop="password">
+              <el-input type="password" placeholder="请输入认证密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
+                <el-button slot="prepend" icon="iconfont icon-yuechi"></el-button>
+              </el-input>
+            </el-form-item>
+
+            <el-form-item prop="code">
+              <div class="form-inline-input">
+                <div class="code-box" id="code-box">
+                  <input ref="coderef" type="text" name="code" class="code-input" />
+                  <p></p>
+                  <span style="color:#909399">
                      拖动验证
                   </span>
+                </div>
+              </div>
+            </el-form-item>
+
+            <el-form-item>
+              <el-checkbox v-model="checked"><span style="color: blueviolet">七天内免登录</span></el-checkbox>
+            </el-form-item>
+
+
+            <div class="login-btn">
+              <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
             </div>
-          </div>
-        </el-form-item>
+            <!-- 登录进度 -->
+            <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
+                         :stroke-width="18"
+                         :percentage="percent"
+                         status="success"></el-progress>
+
+          </el-form>
+
+        </el-tab-pane>
+        <el-tab-pane label="短信登录">
+
+          <el-form :model="ruleForm" :rules="smsForm" ref="ruleForm" label-width="0px" class="ms-content">
+            <el-form-item>
+              <el-input v-model="smsForm.phoneNumber" placeholder="手机号">
+                <el-button slot="prepend" icon="el-icon-phone"></el-button>
+              </el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-input placeholder="请输入短信验证码" v-model="smsForm.code">
+                <el-button slot="prepend" @click="getSmsCode" :disabled="ddStatus">{{testContent}}</el-button>
+              </el-input>
+            </el-form-item>
+
+            <el-form-item>
+              <el-checkbox v-model="checked"><span style="color: blueviolet">七天内免登录</span></el-checkbox>
+            </el-form-item>
 
 
-        <div class="login-btn">
-          <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
-        </div>
-        <!-- 登录进度 -->
-        <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
-                     :stroke-width="18"
-                     :percentage="percent"
-                     status="success"></el-progress>
+            <div class="login-btn">
+              <el-button type="primary" @click="submitSmsForm()">登录</el-button>
+            </div>
 
-      </el-form>
+          </el-form>
+
+        </el-tab-pane>
+      </el-tabs>
     </div>
 
 
@@ -51,12 +87,18 @@
 </template>
 
 <script>
+  import {delCookie, getCookie, setCookie} from "../../utils/util";
+
   export default {
     name: "login",
     data(){
       return{
+        totalTime: 60,
+        testContent:"获取验证码",
+        ddStatus:false,
+        checked:false,
         divimg:{//背景图片的使用
-          backgroundImage:"url(" + require('../../assets/yun.jpg') + ")",
+          backgroundImage:"url(" + require('../../assets/timg.jpg') + ")",
           backgroundRepeat: "no-repeat",
           height:"100%",
           width:"100%",
@@ -66,6 +108,10 @@
         percent:0,
         jindustyle:{
           display:'none'
+        },
+        smsForm:{
+          phoneNumber:"15615749127",
+          code:""
         },
         ruleForm: {
           username:'zhangsan',
@@ -82,8 +128,130 @@
       }
     },
     methods:{
-      submitForm(ruleid){
+      submitSmsForm(){
+        //短信验证码登录
+        let par={
+          "phoneNumber":this.smsForm.phoneNumber,
+          "code":this.smsForm.code
+        };
+        if(this.smsForm.phoneNumber==""||this.smsForm.phoneNumber==null){
+          this.$notify.info({
+            title: '提示',
+            message: '请填写手机号'
+          });
+          return;
+        }
+        if(this.smsForm.code==""||this.smsForm.code==null){
+          this.$notify.info({
+            title: '提示',
+            message: '请填写验证码'
+          });
+          return;
+        }
+        // par.code=this.$refs.coderef.value;
+        //转JSON串
+        //let canshu=this.toAes.encrypt(JSON.stringify(par));
+        // let params={canshu:canshu};
+        //let qs=require("qs");
+        //打开登陆进度条
+        this.$data.jindustyle.display='block';
+        //每0.1秒更新一下进度
+        var timer=setInterval(()=>{
+          let pp=this.$data.percent+10;
+          if(pp>=100){
+            pp=99;
+          }
+          this.$data.percent=pp;
+        },100)
+        //从cookie中取出某一个名称的Cookie的值
+        par.codekey=this.Cookies.get("authcode")
+        this.$axios.post(this.domain.ssoserverpath+"smsLogin",par).then((response)=>{
+          if(response.data.code==200){
+            //存储token到vuex中，token
+            if(this.checked){
+              setCookie("jian","zhi",7);
+            }
+            window.localStorage.setItem("token",response.data.token);
+            window.localStorage.setItem("userInfo",[JSON.stringify(response.data.result)]);
+            //关闭加载窗
+            this.$data.percent=100
+            //隐藏进度条
+            this.$data.jindustyle.display='none'
+            //关闭定时
+            clearInterval(timer)
 
+            //跳转到首页界面
+            //将用户ID存入到全局的VUE对象中
+
+            this.$router.push({path:'/view/shouye/shouye',query:{username:response.data.result.userName,userid:response.data.result.id}});
+
+          }else if(respo.data.error!=null){
+            //关闭加载窗
+            this.$data.percent=100
+            //隐藏进度条
+            this.$data.jindustyle.display='none'
+            //关闭定时
+            clearInterval(timer)
+            this.$notify.error({
+              title: '提示',
+              duration:1000,
+              message: respo.error
+            });
+          }
+
+        }).catch((error)=>{
+          //关闭加载窗
+          this.$data.percent=100;
+          //隐藏进度条
+          this.$data.jindustyle.display='none';
+          //关闭定时
+          clearInterval(timer);
+          this.$notify.error({
+            title: '错误',
+            message: '出错了~_~，请联系管理员！'
+          });
+        })
+      },
+      getSmsCode(){
+        if(this.smsForm.phoneNumber==""||this.smsForm.phoneNumber==null){
+          this.$notify.info({
+            title: '提示',
+            message: '请填写手机号'
+          });
+          return;
+        }
+        //获取短信验证码
+        var _this = this;
+        var code = "";
+        let map ={"phoneNumber":this.smsForm.phoneNumber}
+        this.$axios.post(this.domain.ssoserverpath+'getSmsCode',map).then((response)=>{
+          console.log(response.data.result)
+          if(response.code==200){
+            code=response.data.result;
+            //向浏览器写一个Cookie
+            document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
+            _this.moveCode(code,_this);
+            //验证码倒计时
+            let clock = window.setInterval(() => {
+              this.totalTime--;
+              this.testContent = this.totalTime + 's后重新发送'
+              this.ddStatus = true;
+              if (this.totalTime < 0) {     //当倒计时小于0时清除定时器
+                window.clearInterval(clock)
+                this.testContent = '重新发送验证码'
+                this.totalTime = 60
+                this.ddStatus = false;
+              }
+            },1000)
+          }else{
+            this.$notify.info({
+              title: '提示',
+              message: response.data.error
+            });
+          }
+        })
+      },
+      submitForm(ruleid){
         let code=this.$refs.coderef.value;
         if(code==null||code==""){
           const h = this.$createElement;
@@ -128,12 +296,13 @@
             this.$data.percent=pp;
           },100)
           //从cookie中取出某一个名称的Cookie的值
-          console.log(par)
           par.codekey=this.Cookies.get("authcode")
-          console.log(par)
           this.$axios.post(this.domain.ssoserverpath+"login",par).then((response)=>{
             if(response.data.code==200){
               //存储token到vuex中，token
+              if(this.checked){
+                setCookie("jian","zhi",7);
+              }
               window.localStorage.setItem("token",response.data.token);
               window.localStorage.setItem("userInfo",[JSON.stringify(response.data.result)]);
               //关闭加载窗
@@ -273,24 +442,27 @@
         };
         return fn;
       }//拖动验证end
-
     },
     mounted(){
-      window.sessionStorage.clear();
-      window.localStorage.clear();
-      var _this = this;
-      var code = "";
-      //从后台获取滑动验证码
-      //参数 url 访问参数
-      this.$axios.post(this.domain.ssoserverpath+'getCode').then((response)=>{
-        console.log(response.data.result)
-        code=response.data.result;
-        //向浏览器写一个Cookie
-        document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
-        _this.moveCode(code,_this);
-      })
+      //七天内免登录
+      if(getCookie("jian")){
+        this.$router.push({path:'/system'});
+      }else{
+        var _this = this;
+        var code = "";
+        //从后台获取滑动验证码
+        //参数 url 访问参数
+        this.$axios.post(this.domain.ssoserverpath+'getCode').then((response)=>{
+          console.log(response.data.result)
+          code=response.data.result;
+          //向浏览器写一个Cookie
+          document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
+          _this.moveCode(code,_this);
+        })
+      }
+      // window.sessionStorage.clear();
+      // window.localStorage.clear();
 
-//});
     }
   }
 </script>

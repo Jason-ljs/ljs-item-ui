@@ -193,13 +193,20 @@
           </div>
         </el-dialog>
       </el-tab-pane>
+
       <el-tab-pane label="批量添加用户">批量添加用户</el-tab-pane>
+
+      <el-tab-pane label="每日活跃用户量">
+        <div id="main" style="width: 1800px;height:400px;"></div>
+      </el-tab-pane>
+
     </el-tabs>
 
   </div>
 </template>
 
 <script>
+  import echarts from 'echarts';
     export default {
         name: "userManager",
       data(){
@@ -231,6 +238,7 @@
           }
         };
           return{
+            charts: '',
             userInfo:{},
             formInline: {
               user: '',
@@ -283,8 +291,58 @@
         this.userInfo=JSON.parse(window.localStorage.getItem("userInfo"));
         this.getList();
         this.findRoleAll();
+        this.$nextTick(function() {
+          this.drawLine('main')
+        })
       },
       methods: {
+        drawLine(id) {
+          this.charts = echarts.init(document.getElementById(id))
+          this.$axios.post(this.domain.serverpath+"opinionData").then((response)=> {
+            console.log(response.data)
+            this.xData = response.data.xList;
+            this.opinionData = response.data.yList;
+            this.charts.setOption({
+              title: {
+                text: '每日用户活跃度'
+              },
+              tooltip: {
+                trigger: 'axis'
+              },
+              legend: {
+                data: ['日登录量']
+              },
+              grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+              },
+
+              toolbox: {
+                feature: {
+                  saveAsImage: {}
+                }
+              },
+              xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: response.data.xList
+
+              },
+              yAxis: {
+                type: 'value'
+              },
+
+              series: [{
+                name: '日登录量',
+                type: 'line',
+                stack: '总量',
+                data: response.data.yList
+              }]
+            })
+          })
+        },
         //列表下载
         downloadExcel() {
           this.$confirm('确定下载列表文件?', '提示', {

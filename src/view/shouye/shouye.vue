@@ -68,6 +68,7 @@
 <script>
   import mymenu from './datamenu.vue'
   import mymain from './datamain.vue'
+  import {delCookie} from "../../utils/util";
 
   export default {
 
@@ -104,6 +105,7 @@
                 //清除session中的所有值
                 window.sessionStorage.clear();
                 window.localStorage.clear();
+                delCookie("jian");
                 this.$router.push({path:'/'});
               }
             })
