@@ -9,6 +9,8 @@ import system from '@/view/shouye/system'
 import userManager from '@/view/user/userManager'
 import roleManager from '@/view/role/roleManager'
 import menuManager from '@/view/menu/menuManager'
+import account from '@/view/resetPwd/account'
+import reset_pwd from '@/view/resetPwd/reset_pwd'
 
 Vue.use(Router)
 
@@ -72,6 +74,22 @@ export default new Router({
       component:datamenu,
       meta:{
         require:true
+      }
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: account,
+      meta:{
+        require: false
+      }
+    },
+    {
+      path: '/reset_pwd',
+      name: 'reset_pwd',
+      component: reset_pwd,
+      meta:{
+        require: false
       }
     }
   ]

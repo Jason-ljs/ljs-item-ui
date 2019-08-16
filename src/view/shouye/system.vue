@@ -62,7 +62,7 @@
 
           <div slot="header" class="clearfix">
             <span style="font-weight:bold">操作帮助</span>
-            <div style="text-align: center"><span>使用蛟龙快速组织信息</span></div>
+            <div style="text-align: center"><span>使用Jason快速组织信息</span></div>
           </div>
           <div class="text item">
                 <div style="margin-left:50px;float:left;height:100px">

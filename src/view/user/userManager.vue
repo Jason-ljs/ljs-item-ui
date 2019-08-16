@@ -194,7 +194,26 @@
         </el-dialog>
       </el-tab-pane>
 
-      <el-tab-pane label="批量添加用户">批量添加用户</el-tab-pane>
+      <el-tab-pane label="批量添加用户">
+
+        <div style="float: left;"><el-button style="margin-left: 10px;" size="small" type="warning" @click="downloadTemplate">下载模板</el-button></div>
+        <div style="float: left;width: 100%;height: 20px"></div>
+        <div style="float: left">
+          <el-upload
+                     class="upload-demo"
+                     ref="upload"
+                     action="http://localhost:10000/api/manger/uploadExcel"
+                     :on-preview="handlePreview"
+                     :on-remove="handleRemove"
+                     :file-list="fileList"
+                     :auto-upload="false">
+            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传xls/xlsx文件，且不超过2M</div>
+          </el-upload>
+        </div>
+
+      </el-tab-pane>
 
       <el-tab-pane label="每日活跃用户量">
         <div id="main" style="width: 1800px;height:400px;"></div>
@@ -238,6 +257,7 @@
           }
         };
           return{
+            fileList:[],
             charts: '',
             userInfo:{},
             formInline: {
@@ -296,7 +316,30 @@
         })
       },
       methods: {
+        downloadTemplate(){
+          //下载模板
+          var that = this;
+          let listData = [];
+          require.ensure([], () => {
+            const { export_json_to_excel } = require('@/excel/export2Excel'); //这里必须使用绝对路径，使用@/+存放export2Excel的路径
+            const tHeader = ['用户名称','登录名','密码','性别','电话']; // 导出的表头名信息
+            const filterVal = "" // 导出的表头字段名，需要导出表格字段名
+            const list = listData;
+            const data = that.formatJson(filterVal, list);
+
+            export_json_to_excel(tHeader, data, '批量添加模板excel');// 导出的表格名称，根据需要自己命名
+          })
+        },
+        submitUpload() {
+          //批量添加
+          this.$refs.upload.submit();
+        },
+        handleRemove(file, fileList) {
+        },
+        handlePreview(file) {
+        },
         drawLine(id) {
+          //折线图
           this.charts = echarts.init(document.getElementById(id))
           this.$axios.post(this.domain.serverpath+"opinionData").then((response)=> {
             console.log(response.data)
@@ -361,7 +404,7 @@
           var that = this;
           require.ensure([], () => {
             const { export_json_to_excel } = require('@/excel/export2Excel'); //这里必须使用绝对路径，使用@/+存放export2Excel的路径
-            const tHeader = ['序号','角色名称','登录名','性别','电话','创建时间']; // 导出的表头名信息
+            const tHeader = ['序号','用户名称','登录名','性别','电话','创建时间']; // 导出的表头名信息
             const filterVal = ['id','userName', 'loginName', 'sex', 'tel', 'createTimeFormat']; // 导出的表头字段名，需要导出表格字段名
             const list = that.excelData;
             const data = that.formatJson(filterVal, list);

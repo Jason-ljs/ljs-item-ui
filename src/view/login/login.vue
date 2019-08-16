@@ -42,6 +42,7 @@
 
             <div class="login-btn">
               <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
+              <a href="http://localhost:8080/account">忘记密码</a>
             </div>
             <!-- 登录进度 -->
             <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
@@ -226,7 +227,7 @@
         let map ={"phoneNumber":this.smsForm.phoneNumber}
         this.$axios.post(this.domain.ssoserverpath+'getSmsCode',map).then((response)=>{
           console.log(response.data.result)
-          if(response.code==200){
+          if(response.data.code==200){
             code=response.data.result;
             //向浏览器写一个Cookie
             document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
