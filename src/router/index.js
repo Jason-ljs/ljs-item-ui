@@ -11,6 +11,7 @@ import roleManager from '@/view/role/roleManager'
 import menuManager from '@/view/menu/menuManager'
 import account from '@/view/resetPwd/account'
 import reset_pwd from '@/view/resetPwd/reset_pwd'
+import reset_success from '@/view/resetPwd/reset_success'
 
 Vue.use(Router)
 
@@ -88,6 +89,14 @@ export default new Router({
       path: '/reset_pwd',
       name: 'reset_pwd',
       component: reset_pwd,
+      meta:{
+        require: false
+      }
+    },
+    {
+      path: '/reset_success',
+      name: 'reset_success',
+      component: reset_success,
       meta:{
         require: false
       }
