@@ -2,7 +2,7 @@
   <div>
     <el-tabs type="border-card">
       <el-tab-pane label="用户管理">
-        <el-form :inline="true" :model="formInline" class="demo-form-inline" style="margin: 10px 0">
+        <el-form :inline="true" :model="formInline" class="demo-form-inline" style="margin: 10px 0px">
           <el-form-item label="用户名">
             <el-input v-model="formInline.user" placeholder="用户名"></el-input>
           </el-form-item>
@@ -88,6 +88,11 @@
             label="角色"
             show-overflow-tooltip>
           </el-table-column>
+          <el-table-column
+            prop="email"
+            label="绑定邮箱"
+            show-overflow-tooltip>
+          </el-table-column>
           <!--<el-table-column
             label="用户头像"
             show-overflow-tooltip>
@@ -162,6 +167,9 @@
             </el-form-item>
             <el-form-item label="电话" prop="tel">
               <el-input v-model="formEntity.tel" type="number"></el-input>
+            </el-form-item>
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="formEntity.email" type="email"></el-input>
             </el-form-item>
             <el-form-item label="登录密码" prop="password">
               <el-input type="password" v-model="formEntity.password"></el-input>
@@ -276,6 +284,7 @@
               loginName:"",
               sex:"",
               tel:"",
+              email:"",
               password:"",
               cpassword:"",
               imgUrl:""
@@ -292,6 +301,10 @@
               ],
               tel: [
                 { required: true, validator: isPhone, trigger: 'change' }
+              ],
+              email: [
+                { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+                { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
               ],
               password: [
                 { required: true, validator: validatePass, trigger: 'blur' }
@@ -322,7 +335,7 @@
           let listData = [];
           require.ensure([], () => {
             const { export_json_to_excel } = require('@/excel/export2Excel'); //这里必须使用绝对路径，使用@/+存放export2Excel的路径
-            const tHeader = ['用户名称','登录名','密码','性别','电话']; // 导出的表头名信息
+            const tHeader = ['用户名称','登录名','密码','性别','电话','邮箱']; // 导出的表头名信息
             const filterVal = "" // 导出的表头字段名，需要导出表格字段名
             const list = listData;
             const data = that.formatJson(filterVal, list);
@@ -404,8 +417,8 @@
           var that = this;
           require.ensure([], () => {
             const { export_json_to_excel } = require('@/excel/export2Excel'); //这里必须使用绝对路径，使用@/+存放export2Excel的路径
-            const tHeader = ['序号','用户名称','登录名','性别','电话','创建时间']; // 导出的表头名信息
-            const filterVal = ['id','userName', 'loginName', 'sex', 'tel', 'createTimeFormat']; // 导出的表头字段名，需要导出表格字段名
+            const tHeader = ['序号','用户名称','登录名','性别','电话','邮箱','创建时间']; // 导出的表头名信息
+            const filterVal = ['id','userName', 'loginName', 'sex', 'tel','email', 'createTimeFormat']; // 导出的表头字段名，需要导出表格字段名
             const list = that.excelData;
             const data = that.formatJson(filterVal, list);
 
@@ -459,6 +472,13 @@
           let url = "addUser";
           if (this.formEntity.id>0){
             url = "updateUser"
+          }
+          if(!/^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/.test(this.formEntity.email)){
+            this.$message({
+              message: '邮箱格式不正确',
+              type: 'error'
+            });
+            return;
           }
           if(/^1(3|4|5|6|7|8|9)\d{9}$/.test(this.formEntity.tel)){
             this.$axios.post(this.domain.serverpath+url,this.formEntity).then((response)=> {

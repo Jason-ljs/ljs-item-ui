@@ -111,7 +111,7 @@
           display:'none'
         },
         smsForm:{
-          phoneNumber:"15615749127",
+          phoneNumber:"19833151556",
           code:""
         },
         ruleForm: {
