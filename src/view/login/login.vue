@@ -42,7 +42,7 @@
 
             <div class="login-btn">
               <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
-              <a href="http://localhost:8080/account">忘记密码</a>
+              <a href="https://localhost:8080/account">忘记密码</a>
             </div>
             <!-- 登录进度 -->
             <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"

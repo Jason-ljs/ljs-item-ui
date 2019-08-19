@@ -473,35 +473,35 @@
           if (this.formEntity.id>0){
             url = "updateUser"
           }
-          if(!/^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/.test(this.formEntity.email)){
+          if(/^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/.test(this.formEntity.email)){
+            if(/^1(3|4|5|6|7|8|9)\d{9}$/.test(this.formEntity.tel)){
+              this.$axios.post(this.domain.serverpath+url,this.formEntity).then((response)=> {
+                if(response.data.code==200){
+                  this.dialogFormVisible = false;
+                  this.formEntity={};
+                  this.getList()
+                  this.$message({
+                    message: response.data.success,
+                    type: 'success'
+                  });
+                }else {
+                  this.$message({
+                    message: response.data.error,
+                    type: 'error'
+                  });
+                }
+              }).catch((err)=>{
+                this.dialogFormVisible = false;
+                this.$message.error('您无此操作权限！');
+              })
+            }else {
+              this.$message.error('手机号格式有误！');
+            }
+          }else {
             this.$message({
               message: '邮箱格式不正确',
               type: 'error'
             });
-            return;
-          }
-          if(/^1(3|4|5|6|7|8|9)\d{9}$/.test(this.formEntity.tel)){
-            this.$axios.post(this.domain.serverpath+url,this.formEntity).then((response)=> {
-              if(response.data.code==200){
-                this.dialogFormVisible = false;
-                this.formEntity={};
-                this.getList()
-                this.$message({
-                  message: response.data.success,
-                  type: 'success'
-                });
-              }else {
-                this.$message({
-                  message: response.data.error,
-                  type: 'error'
-                });
-              }
-            }).catch((err)=>{
-              this.dialogFormVisible = false;
-              this.$message.error('您无此操作权限！');
-            })
-          }else {
-            this.$message.error('手机号格式有误！');
           }
         },
         handleAvatarSuccess(res, file) {
